@@ -1,32 +1,46 @@
-function KiwiGraph(data) {
+function KiwiGraph(data, whichData) {
  
   	var axisx=[],
   	    axisy=[],
-  	    innerData=[];
-  	var lengthOfRow = 0;
+  	    innerData=[],
+  	    tempaxisy = [],
+  	    myData = [];
   	var first = 0;
-  	//var month_names_short= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  	var names = [];
+  	
+  	whichData = typeof whichData !== 'undefined' ? whichData : 1;
 
+  	//var month_names_short= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  	var axisx_true= [23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12,11,10,9,8,7,6,5,4,3,2,1,0]
+  	var axisx = ["11","10","9","8","7","6","5","4","3","2","1","12pm","11","10","9","8","7","6","5","4","3","2","1","12am"]
+  	axisx = axisx.reverse();
+  	axisx_true = axisx_true.reverse();
   	//var date = new Date(unix_timestamp*1000);
   	//get data
-	_.each(data.cols,function(num){ if(first) {axisy.push(num.id); } first = 1 ;});
+	_.each(data.cols,function(num){ if(first) {names.push(num.id);} first = 1;});
 	
 	_.each(data.rows,function(num){ 
 		var date = new Date(num[0]*1000);
-		axisx.push(date.getDate() + "." + date.getMonth());
-		for(var n=1 ; n < num.length ; n++ )
-		{
-			innerData.push(num[n]);
-		}
-		lengthOfRow = num.length-1;
+		myData.push(num);
+		axisy.push(num[0]*1000);//date.getDate() + "." + date.getMonth());
+		
+		innerData.push(num[1]);
+	});
+	axisy = _.sortBy(axisy, function (name) {return name})
+
+	
+	_.each(axisy, function(value){
+		var date = new Date(value);
+		tempaxisy.push(date.getDate() + "." + (date.getMonth()+1));		
 	});
 	
+	axisy = _.uniq(tempaxisy);
+	
     // Draw
-    
     var width = 800,
-        height = 270,
-        leftgutter = 70,
-        bottomgutter = 10,
+        height = 650,
+        leftgutter = 40,
+        bottomgutter = 20,
         titlespace = 10,
         r = Raphael("chart", width, height),
         txt = {"font": '10px Fontin-Sans, Arial', stroke: "none", fill: "#999"},
@@ -40,26 +54,52 @@ function KiwiGraph(data) {
         r.text(leftgutter + X * (i + .5), height-6, axisx[i]).attr(txt);
     }
     for (var i = 0, ii = axisy.length; i < ii; i++) {
-        r.text(30, Y * (i + .5), axisy[i]).attr(txt);
+        r.text(30, Y * (i + .5)+titlespace, axisy[i]).attr(txt);
     }
     if(typeof data.kiwi_options != 'undefined')
     	if(typeof data.kiwi_options.title != 'undefined')
     		r.text((width+leftgutter)/2, 6, data.kiwi_options.title).attr(title);
     	
-    var m = 0;
+    
     for (var i = 0, ii = axisy.length; i < ii; i++) {
-        var o = 0;
         for (var j = 0, jj = axisx.length; j < jj; j++) {
-	    var R = innerData[o+m] && Math.min(Math.round(Math.sqrt(Math.abs(innerData[o+m]) / Math.PI) * 4), max);
-
+	    var R=0;
+	    
+	    var datesToWrite = [];
+	    
+	    
+	    datesToWrite = _.filter(myData, function(num){ 
+		    var myDate = new Date(num[0]*1000);
+		    var compareDate = myDate.getDate() + "." + (myDate.getMonth()+1);
+	    	    return compareDate == axisy[i]; 
+	    });
+	    
+	    var hours = [];
+	    _.each(datesToWrite,function(num){ 
+	    	var myDate = new Date(num[0]*1000);
+	    	hours.push(myDate.getHours());
+	    });
+	    
+	    for(var t=0 ; t < hours.length ; t++){
+	    	if(hours[t] == axisx_true[j]){
+	  		innerData[i] = datesToWrite[t][whichData];
+	  		R = innerData[i] && Math.min(Math.round(Math.sqrt(Math.abs(innerData[i]) / Math.PI) * 4), max);
+	  	}
+	    }
+	    
             if (R) {
                 (function (dx, dy, R, value) {
-                    var color = "hsb(" + [(1 - R / max) * .67, .68, .81] + ")";
+                    if(value > 0)
+                    	var color = "hsb(" + [(1 - R / max) * .47, .68, .81] + ")";
+                    else
+                    	var color = "#F00";
+                    
                     var dt = r.circle(dx + 60 + R, dy + 10, R).attr({stroke: "none", fill: color});
+                    
                     if (R < 6) {
                         var bg = r.circle(dx + 60 + R, dy + 10, 6).attr({stroke: "none", fill: "#000", opacity: .4}).hide();
                     }
-                    var lbl = r.text(dx + 60 + R, dy + 10, innerData[o+m])
+                    var lbl = r.text(dx + 60 + R, dy + 10, innerData[i])
                             .attr({"font": '10px Fontin-Sans, Arial', stroke: "none", fill: "#fff"}).hide();
                     var dot = r.circle(dx + 60 + R, dy + 10, max).attr({stroke: "none", fill: "#000", opacity: 0});
                     dot[0].onmouseover = function () {
@@ -80,9 +120,40 @@ function KiwiGraph(data) {
                         }
                         lbl.hide();
                     };
-                })(leftgutter + X * (j + .5) - 60 - R, Y * (i + .5) - 10, R, innerData[o+m]);
+                })(leftgutter + X * (j + .5) - 60 - R, Y * (i + .5) - 10 + titlespace, R, innerData[i]);
             }
-            o+=axisy.length;
-        }m++;
+        }
     }
+    
+
+    
+    for (var n = 0, nn = names.length; n < nn; n++) {
+    (function (n) {
+    	
+    	
+    	var button = r.set();
+    	button.push(r.rect(200+220 ,200+25*n, 60 , 20 , 2).attr({stroke: "none", fill: "#22CC33", opacity: .4}));
+    	button.push(r.text(200+250 ,200+10+25*n, names[n]));
+    	
+    	button.hover(  function () {                       
+                            var clr = Raphael.rgb2hsb(color);
+                            clr.b = .5;
+                            button.attr("fill", Raphael.hsb2rgb(clr).hex);
+                        
+                       // lbl.show();
+                    },
+          function () {
+                        
+                            button[0].attr("fill", "#22CC33");
+                            button[1].attr("fill", "#000");
+                    })
+         button.click(function () {
+         		
+         		$('#chart').empty();
+                        KiwiGraph(data, n+1)
+                    });
+                   
+    })(n);
+    }
+    
 }
