@@ -38,27 +38,28 @@ function KiwiGraph(data, whichData) {
 	
     // Draw
     var width = 800,
-        height = 650,
-        leftgutter = 40,
+        height = 800,
+        leftgutter = 45,
         bottomgutter = 20,
         titlespace = 10,
+        buttonsHeight = 25,
         r = Raphael("chart", width, height),
         txt = {"font": '10px Fontin-Sans, Arial', stroke: "none", fill: "#999"},
         title = {"font": '12px Fontin-Sans, Arial', stroke: "none", fill: "#999","font-weight": 'bold'},
         X = (width - leftgutter) / axisx.length,
-        Y = (height - bottomgutter - titlespace) / axisy.length,
+        Y = (height - bottomgutter - titlespace - buttonsHeight) / axisy.length,
         color = $("#chart").css("color");
         max = Math.round(X / 2) - 1;
     // r.rect(0, 0, width, height, 5).attr({fill: "#000", stroke: "none"});
     for (var i = 0, ii = axisx.length; i < ii; i++) {
-        r.text(leftgutter + X * (i + .5), height-6, axisx[i]).attr(txt);
+        r.text(leftgutter + X * (i + .5), height-6-buttonsHeight, axisx[i]).attr(txt);
     }
     for (var i = 0, ii = axisy.length; i < ii; i++) {
         r.text(30, Y * (i + .5)+titlespace, axisy[i]).attr(txt);
     }
     if(typeof data.kiwi_options != 'undefined')
     	if(typeof data.kiwi_options.title != 'undefined')
-    		r.text((width+leftgutter)/2, 6, data.kiwi_options.title).attr(title);
+    		r.text((width+leftgutter)/2, 6, data.kiwi_options.title + " : " + names[whichData-1]).attr(title);
     	
     
     for (var i = 0, ii = axisy.length; i < ii; i++) {
@@ -90,9 +91,9 @@ function KiwiGraph(data, whichData) {
             if (R) {
                 (function (dx, dy, R, value) {
                     if(value > 0)
-                    	var color = "hsb(" + [(1 - R / max) * .47, .68, .81] + ")";
+                    	var color = "hsb(" + [ (1 - R / max) *.70, (1 - R / max) *.80, .81] + ")";
                     else
-                    	var color = "#F00";
+                    	var color = "#F62817";
                     
                     var dt = r.circle(dx + 60 + R, dy + 10, R).attr({stroke: "none", fill: color});
                     
@@ -132,19 +133,21 @@ function KiwiGraph(data, whichData) {
     	
     	
     	var button = r.set();
-    	button.push(r.rect(200+220 ,200+25*n, 60 , 20 , 2).attr({stroke: "none", fill: "#22CC33", opacity: .4}));
-    	button.push(r.text(200+250 ,200+10+25*n, names[n]));
+    	button.push(r.rect(19 +65*n ,height-20, 62 , 20 , 5).attr({stroke: "none", fill: "#D5EA49", opacity: .8}));
+    	button.push(r.text(50 +65*n,height-10, names[n]));
     	
-    	button.hover(  function () {                       
-                            var clr = Raphael.rgb2hsb(color);
-                            clr.b = .5;
+    	button.hover(  function () { 
+    			button[0].attr("fill", "#000");
+                        button[1].attr("fill", "#FFF");                      
+                            /*var clr = Raphael.rgb2hsb(color);
+                            clr.b = .8;
                             button.attr("fill", Raphael.hsb2rgb(clr).hex);
                         
-                       // lbl.show();
+                       // lbl.show();*/
                     },
           function () {
                         
-                            button[0].attr("fill", "#22CC33");
+                            button[0].attr("fill", "#D5EA49");
                             button[1].attr("fill", "#000");
                     })
          button.click(function () {
