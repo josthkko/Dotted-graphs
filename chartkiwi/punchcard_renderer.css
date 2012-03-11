@@ -1,0 +1,36 @@
+@charset "utf-8";
+body {
+font-family: Arial, Helvetica, sans-serif;
+}
+#tooltip {
+	position:absolute;
+	font: 14px arial;
+}
+#tooltip_inner {
+	border: 2px 	#CDCDCD solid;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	stroke: #cccccc;
+	padding: 5px;
+	/* Fallback for web browsers that doesn't support RGBa */
+	background: rgb(255, 255, 255);
+	/* RGBa with 0.6 opacity */
+	background: rgba(255, 255, 255, 0.8);
+	/* For IE 5.5 - 7
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#99000000, endColorstr=#99000000);
+	/* For IE 8
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99000000, endColorstr=#99000000)"; ENABLE LATER*/
+	
+}
+#tooltip_date {
+	width: 100%;
+	margin:0px auto 5px auto;
+	font-weight: bold;
+	font-size: 14px;
+	text-align: center;
+}
+.tooltip_text {
+	float:left;
+	text-align: center;
+	width: 100%;
+}
